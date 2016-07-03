@@ -44,7 +44,7 @@ if(
 	!in_array(explode("/",$file)[0], $resource_dirs)
 ){
 	if(!empty(ATTEMPTS_LOG_FILE)){
-		file_put_contents("attempts.log", date('d.m.Y H:i:s')." - ".$_SERVER['REMOTE_ADDR']." ".$file."\r\n",FILE_APPEND);
+		file_put_contents(ATTEMPTS_LOG_FILE, date('d.m.Y H:i:s')." - ".$_SERVER['REMOTE_ADDR']." ".$file."\r\n",FILE_APPEND);
 	}
 	header("HTTP/1.0 404 Not Found");
 	die('404 Not Found');
