@@ -47,7 +47,7 @@ $file = $_SERVER["QUERY_STRING"];
 if( substr($file, -4) != ".bz2" ){ exit404(); }
 $file = substr($file, 0, -4);;
 
-$cfile_path = CACHE_DIR."/".$file.".bz2";
+$cfile_path = CACHE_DIR.$file.".bz2";
 $cfile_rpath = realpath($cfile_path);
 $cache_rpath = realpath(CACHE_DIR);
 
@@ -63,7 +63,7 @@ if($cfile_rpath === false){ // Cached file doesn't exist
 	$created = false;
 	foreach($scan_dirs as $dir){
 		$dir_rpath = realpath($dir);
-		$file_rpath = realpath($dir_rpath."/".$file);
+		$file_rpath = realpath($dir_rpath.$file);
 		$file_info = pathinfo($file_rpath);
 
 		if($file_rpath === false){
