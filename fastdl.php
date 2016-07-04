@@ -2,9 +2,11 @@
 define("GAME_DIR", "/home/steam/gmod_server/garrysmod");
 define("CACHE_DIR", "./fastdl_cache");
 define("SCAN_ADDONS", true);
+define("SCAN_GAMEMODES", true);
 define("ATTEMPTS_LOG_FILE", "./attempts.log");
 
-$resource_dirs = [
+
+$content_dirs = [
 	"maps",
 	"resource",
 	"materials",
@@ -45,30 +47,39 @@ $file = $_SERVER["QUERY_STRING"];
 if( substr($file, -4) != ".bz2" ){ exit404(); }
 $file = substr($file, 0, -4);;
 
-$file_info = pathinfo($file);
 $cfile_path = CACHE_DIR."/".$file.".bz2";
 $cfile_rpath = realpath($cfile_path);
 $cache_rpath = realpath(CACHE_DIR);
 
 if($cfile_rpath === false){ // Cached file doesn't exist
-	$scan_dirs = [];
+	$scan_dirs = [GAME_DIR];
 	if(SCAN_ADDONS){
-		$scan_dirs = glob(GAME_DIR.'/addons/*' , GLOB_ONLYDIR);
+		$scan_dirs = array_merge($scan_dirs,glob(GAME_DIR.'/addons/*' , GLOB_ONLYDIR));
 	}
-	array_unshift($scan_dirs,GAME_DIR);
+	if(SCAN_GAMEMODES){
+		$scan_dirs = array_merge($scan_dirs,glob(GAME_DIR.'/gamemodes/*/content' , GLOB_ONLYDIR));
+	}
 
 	$created = false;
 	foreach($scan_dirs as $dir){
 		$dir_rpath = realpath($dir);
 		$file_rpath = realpath($dir_rpath."/".$file);
+		$file_info = pathinfo($file_rpath);
+
 		if($file_rpath === false){
 			continue;
 		}elseif(strpos($file_rpath, $dir_rpath."/") !== 0) {
-			attempt_log($_SERVER['REMOTE_ADDR']." ".$_SERVER['REQUEST_URI']);
+			attempt_log("Invalid directory: ".$_SERVER['REMOTE_ADDR']." ".$_SERVER['REQUEST_URI']);
+			exit404();
+		}elseif(!in_array($file_info["extension"], $alllowed_extensions)){
+			attempt_log("Invalid file extension: ".$_SERVER['REMOTE_ADDR']." ".$_SERVER['REQUEST_URI']);
+			exit404();
+		}elseif(!in_array(explode("/",substr($file_rpath,strlen($dir_rpath)+1))[0], $content_dirs)){
+			attempt_log("Invalid content directory: ".$_SERVER['REMOTE_ADDR']." ".$_SERVER['REQUEST_URI']);
 			exit404();
 		}
-		// Create cached file
-		mkdir($cache_rpath."/".$file_info["dirname"], 0755, true);
+
+		mkdir($file_info["dirname"], 0755, true);
 
 		$data = file_get_contents($file_rpath);
 		$bz = bzopen($cfile_path, "w");
@@ -80,7 +91,7 @@ if($cfile_rpath === false){ // Cached file doesn't exist
 		exit404();
 	}
 }elseif(strpos($cfile_rpath, $cache_rpath."/") !== 0) { // Cached file exists, but not where it should be. Possible traversal attack?
-	attempt_log($_SERVER['REMOTE_ADDR']." ".$_SERVER['REQUEST_URI']);
+	attempt_log("Invalid cache file location: ".$_SERVER['REMOTE_ADDR']." ".$_SERVER['REQUEST_URI']);
 	exit404();
 }
 
