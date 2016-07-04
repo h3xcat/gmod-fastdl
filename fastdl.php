@@ -13,6 +13,9 @@ $content_dirs = [
 	"models"
 ];
 $alllowed_extensions = [
+	"vtx",
+	"vvd",
+	"phy",
 	"wav",
 	"mp3",
 	"vmt",
