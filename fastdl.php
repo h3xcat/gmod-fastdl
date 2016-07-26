@@ -1,6 +1,6 @@
 <?php
 define("GAME_DIR", "/home/steam/gmod_server/garrysmod");
-define("CACHE_DIR", "./fastdl_cache");
+define("CACHE_DIR", "./fastdl_cache"); // Must be in public folder, and must start with "."
 define("SCAN_ADDONS", true);
 define("SCAN_GAMEMODES", true);
 define("ATTEMPTS_LOG_FILE", "./attempts.log");
@@ -10,9 +10,13 @@ $content_dirs = [
 	"resource",
 	"materials",
 	"sound",
-	"models"
+	"models",
+	"scripts",
+	"particles"
 ];
 $alllowed_extensions = [
+	"pcf",
+	"ztmp",
 	"vtx",
 	"vvd",
 	"phy",
@@ -28,7 +32,8 @@ $alllowed_extensions = [
 	"jpg",
 	"txt",
 	"ain",
-	"bsp"
+	"bsp",
+	"ttc"
 ];
 function attempt_log($str){
 	if(!empty(ATTEMPTS_LOG_FILE)){
@@ -64,7 +69,7 @@ if($cfile_rpath === false){ // Cached file doesn't exist
 		}elseif(strpos($file_rpath, $dir_rpath."/") !== 0) {
 			attempt_log("Invalid directory: ".$_SERVER['REMOTE_ADDR']." ".$_SERVER['REQUEST_URI']);
 			exit404();
-		}elseif(!in_array($file_info["extension"], $alllowed_extensions)){
+		}elseif(!in_array(strtolower($file_info["extension"]), $alllowed_extensions)){
 			attempt_log("Invalid file extension: ".$_SERVER['REMOTE_ADDR']." ".$_SERVER['REQUEST_URI']);
 			exit404();
 		}elseif(!in_array(explode("/",substr($file_rpath,strlen($dir_rpath)+1))[0], $content_dirs)){
