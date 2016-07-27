@@ -5,6 +5,12 @@ define("SCAN_ADDONS", true);
 define("SCAN_GAMEMODES", true);
 define("ATTEMPTS_LOG_FILE", "./attempts.log");
 
+define("GAME_DIR", "/home/steam/gmod_puzzles/garrysmod");
+define("CACHE_DIR", ".");
+define("SCAN_ADDONS", true);
+define("SCAN_GAMEMODES", true);
+define("ATTEMPTS_LOG_FILE", "./attempts.log");
+
 $content_dirs = [
 	"maps",
 	"resource",
@@ -79,19 +85,19 @@ if($cfile_rpath === false){ // Cached file doesn't exist
 		if (!file_exists($cfile_info["dirname"])) {
 			mkdir($cfile_info["dirname"], 0755, true);
 		}
-		
-		$bz = bzopen($cfile_path, "w");
+
+		$bz = fopen($cfile_path, "w");
 		if (flock($bz, LOCK_EX|LOCK_NB)) { // Attempt to manage critical section
-
 			$data = file_get_contents($file_rpath);
-			bzwrite($bz, $data, strlen($data));
-
+			fwrite($bz, bzcompress($data));
 			flock($bz, LOCK_UN);
 		}else{
 			flock($bz, LOCK_EX);
 			flock($bz, LOCK_UN);
 		}
-		bzclose($bz);
+		fclose($bz);
+
+
 		$created = true;
 	}
 	if(!$created){
