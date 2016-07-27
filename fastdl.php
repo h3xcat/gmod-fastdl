@@ -5,12 +5,6 @@ define("SCAN_ADDONS", true);
 define("SCAN_GAMEMODES", true);
 define("ATTEMPTS_LOG_FILE", "./attempts.log");
 
-define("GAME_DIR", "/home/steam/gmod_puzzles/garrysmod");
-define("CACHE_DIR", ".");
-define("SCAN_ADDONS", true);
-define("SCAN_GAMEMODES", true);
-define("ATTEMPTS_LOG_FILE", "./attempts.log");
-
 $content_dirs = [
 	"maps",
 	"resource",
@@ -107,6 +101,16 @@ if($cfile_rpath === false){ // Cached file doesn't exist
 	attempt_log("Invalid cache file location: ".$_SERVER['REMOTE_ADDR']." ".$_SERVER['REQUEST_URI']);
 	exit404();
 }
+
+$bz = fopen($cfile_path, "r+");
+if (flock($bz, LOCK_EX|LOCK_NB)) {
+	flock($bz, LOCK_UN);
+}else{
+	flock($bz, LOCK_EX);
+	flock($bz, LOCK_UN);
+}
+fclose($bz);
+
 header('Location: ' . $cfile_path , true, 302);
 exit();
 ?>
