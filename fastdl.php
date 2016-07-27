@@ -76,10 +76,21 @@ if($cfile_rpath === false){ // Cached file doesn't exist
 			attempt_log("Invalid content directory: ".$_SERVER['REMOTE_ADDR']." ".$_SERVER['REQUEST_URI']);
 			exit404();
 		}
-		mkdir($cfile_info["dirname"], 0755, true);
-		$data = file_get_contents($file_rpath);
+		if (!file_exists($cfile_info["dirname"])) {
+			mkdir($cfile_info["dirname"], 0755, true);
+		}
+		
 		$bz = bzopen($cfile_path, "w");
-		bzwrite($bz, $data, strlen($data));
+		if (flock($bz, LOCK_EX|LOCK_NB)) { // Attempt to manage critical section
+
+			$data = file_get_contents($file_rpath);
+			bzwrite($bz, $data, strlen($data));
+
+			flock($bz, LOCK_UN);
+		}else{
+			flock($bz, LOCK_EX);
+			flock($bz, LOCK_UN);
+		}
 		bzclose($bz);
 		$created = true;
 	}
